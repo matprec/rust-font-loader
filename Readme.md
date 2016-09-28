@@ -7,13 +7,16 @@ Currently supported platforms:
 
 # Example
 ```rust
-extern crate font_loader;
+extern crate font_loader as fonts;
 
 fn main() {
-    let sysfonts = font_loader::SystemFonts::new();
-    for string in sysfonts.enumerate_fonts() {
+    let sysfonts = fonts::system_fonts::query_names();
+    for string in &sysfonts {
         println!("{}", string);
     }
+	let property = fonts::system_fonts::FontPropertyBuilder::new().build();
+	let (font, index) = fonts::system_fonts::get(sysfonts.get(0).unwrap(), &property).unwrap();
+	println!("{:?}", &font[..50]);
 }
 ```
 
