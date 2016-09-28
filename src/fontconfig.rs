@@ -17,7 +17,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 pub mod system_fonts {
-    use fontconfig_sys::{FcConfig, FcInitLoadConfigAndFonts};
+    use fontconfig_sys::{FcConfig, FcInitLoadConfigAndFonts, FcNameParse};
     use fontconfig_sys::{FcPattern, FcPatternCreate, FcPatternDestroy, FcFontMatch};
     use fontconfig_sys::{FcFontList, FcObjectSetBuild, FcChar8, FcDefaultSubstitute};
     use fontconfig_sys::{FcPatternGetString, FcPatternAddInteger, FcPatternGetInteger};
@@ -37,8 +37,8 @@ pub mod system_fonts {
     static FC_FILE: &'static [u8] = b"file\0";
     static FC_WEIGHT: &'static [u8] = b"weight\0";
     static FC_INDEX: &'static [u8] = b"index\0";
-    static FC_FONTFORMAT: &'static [u8] = b"fontformat\0";
     static FC_SLANT: &'static [u8] = b"slant\0";
+    //  static FC_FONTFORMAT: &'static [u8] = b"fontformat\0";
     // 	static FC_STYLE: &'static [u8] = b"style\0";
     // 	static FC_FAMILYLANG: &'static[u8] = b"familylang\0";
     // 	static FC_CHARSET: &'static [u8] = b"charset\0";

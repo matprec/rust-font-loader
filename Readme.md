@@ -3,19 +3,44 @@ A font loading utility written in and for rust.
 
 Currently supported platforms:
 
-* Windows (Win32)
+* Windows
+* Every platform supporting Fontconfig
+ * Unix
+ * Linux
+ * (Mac, not confirmed working)
+ * (Windows, but not used)
+
+# Usage
+## Linux, Unix:
+Fontconfig is required on Linux and Unix, as it is the default Fontmanagement utility on these platforms.
+```
+sudo apt-get install libfontconfig libfontconfig1-dev
+```
 
 # Example
-```rust
+## Cargo.toml
+```
+[dependencies]
+font-loader = "https://github.com/MSleepyPanda/rust-font-loader/"
+```
+
+## main.rs:
 extern crate font_loader as fonts;
 
+use fonts::system_fonts;
+
 fn main() {
-    let sysfonts = fonts::system_fonts::query_names();
+	// Enumerate all fonts
+    let sysfonts = system_fonts::query_names();
     for string in &sysfonts {
         println!("{}", string);
     }
-	let property = fonts::system_fonts::FontPropertyBuilder::new().build();
-	let (font, index) = fonts::system_fonts::get(sysfonts.get(0).unwrap(), &property).unwrap();
+
+	// Get the first font in the list and load its data
+	let family_name = sysfonts.get(0).unwrap();
+	let property = system_fonts::FontPropertyBuilder::new().build();
+	// font is a Vec<u8> with the data, index is the index of the font in the file
+	let (font, index) = system_fonts::get(, &property).unwrap();
 	println!("{:?}", &font[..50]);
 }
 ```
