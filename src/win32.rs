@@ -43,16 +43,15 @@ impl FontConfigBuilder {
         self.config.lfItalic = italic as u8;
         self
     }
-
-    pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
-        self.config.lfStrikeOut = strikeout as u8;
-        self
-    }
-
-    pub fn underline(mut self, underline: bool) -> FontConfigBuilder {
-        self.config.lfUnderline = underline as u8;
-        self
-    }
+    // pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
+    // self.config.lfStrikeOut = strikeout as u8;
+    // self
+    // }
+    //
+    // pub fn underline(mut self, underline: bool) -> FontConfigBuilder {
+    // self.config.lfUnderline = underline as u8;
+    // self
+    // }
 
     pub fn weight(mut self, weight: usize) -> FontConfigBuilder {
         self.config.lfWeight = weight as i32;
@@ -61,7 +60,8 @@ impl FontConfigBuilder {
 
     pub fn facename(mut self, name: &str) -> FontConfigBuilder {
         if name.len() > 31 {
-            panic!("Size must me smaller than 31");
+            panic!("Font length
+ must me smaller than 31");
         }
         let name: &OsStr = name.as_ref();
         let buffer = name.encode_wide();
@@ -111,7 +111,7 @@ impl SystemFonts {
     }
 
     #[allow(non_snake_case)]
-    pub fn enumerate_fonts(&self) -> &Vec<String> {
+    pub fn enumerate_fonts(&mut self) -> &Vec<String> {
         unsafe {
             let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
             let string: [u16; 32] = [0; 32];
@@ -133,7 +133,7 @@ impl SystemFonts {
                 lfFaceName: string,
             };
 
-            let self_pointer = self as *const SystemFonts;
+            let self_pointer = self as *mut SystemFonts;
 
             gdi32::EnumFontFamiliesExW(hdc,
                                        &mut lpLogfont,
