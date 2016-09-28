@@ -25,7 +25,7 @@ font-loader = "https://github.com/MSleepyPanda/rust-font-loader/"
 ```
 
 ## main.rs:
-```
+```rust
 extern crate font_loader as fonts;
 
 use fonts::system_fonts;
