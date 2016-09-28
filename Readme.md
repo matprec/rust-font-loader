@@ -19,12 +19,13 @@ sudo apt-get install libfontconfig libfontconfig1-dev
 
 # Example
 ## Cargo.toml
-```
+```toml
 [dependencies]
 font-loader = "https://github.com/MSleepyPanda/rust-font-loader/"
 ```
 
 ## main.rs:
+```
 extern crate font_loader as fonts;
 
 use fonts::system_fonts;
