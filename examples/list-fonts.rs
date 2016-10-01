@@ -27,8 +27,8 @@ fn main() {
         println!("{}", string);
     }
 
-	let property = system_fonts::FontPropertyBuilder::new().monospace().build();
-	let sysfonts = system_fonts::query_specific(&property);
+	let mut property = system_fonts::FontPropertyBuilder::new().monospace().build();
+	let sysfonts = system_fonts::query_specific(&mut property);
 	for string in &sysfonts {
 		println!("Monospaced font: {}", string);
 	}

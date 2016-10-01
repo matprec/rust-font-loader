@@ -21,7 +21,7 @@ pub mod system_fonts {
     use winapi::{c_int, c_void};
     use winapi::winnt::{PVOID, VOID};
     use winapi::wingdi::FIXED_PITCH;
-    use winapi::wingdi::{ENUMLOGFONTEXW, LOGFONTW};
+    use winapi::wingdi::{ENUMLOGFONTEXW, LOGFONTW, OUT_TT_ONLY_PRECIS};
     use winapi::wingdi::FONTENUMPROCW;
     use winapi::minwindef::{DWORD, LPARAM};
 
@@ -49,7 +49,7 @@ pub mod system_fonts {
                     lfUnderline: 0,
                     lfStrikeOut: 0,
                     lfCharSet: 0,
-                    lfOutPrecision: 0,
+                    lfOutPrecision: OUT_TT_ONLY_PRECIS as u8,
                     lfClipPrecision: 0,
                     lfQuality: 0,
                     lfPitchAndFamily: 0,
@@ -67,9 +67,10 @@ pub mod system_fonts {
             self.italic()
         }
 
-		pub fn monospace() -> FontPropertyBuilder() {
-			self.config.pfPitchAndFamily |= FIXED_PITCH;
-		}
+        pub fn monospace(mut self) -> FontPropertyBuilder {
+            self.config.lfPitchAndFamily |= FIXED_PITCH as u8;
+            self
+        }
         // pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
         // self.config.lfStrikeOut = strikeout as u8;
         // self
@@ -129,28 +130,23 @@ pub mod system_fonts {
 
     pub fn query_all() -> Vec<String> {
         let mut config = FontPropertyBuilder::new().build();
-        query(&mut config, Some(callback_ttf))
+        query_specific(&mut config)
     }
 
-    pub fn query_monospace() -> Vec<String> {
-        let mut config = FontPropertyBuilder::new().build();
-        query(&mut config, Some(callback_monospace))
-    }
-
-    pub fn query_specific(config: &mut FontProperty) -> Vec<String> {
-        query(config, Some(callback_ttf))
-    }
-
-
-    fn query(lp_logfont: &mut LOGFONTW, f: FONTENUMPROCW) -> Vec<String> {
+    pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
 
         let mut fonts = Vec::new();
+        let mut f: FONTENUMPROCW = Some(callback_ttf);
         unsafe {
             let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
 
+            if (property.lfPitchAndFamily & FIXED_PITCH as u8) != 0 {
+                f = Some(callback_monospace);
+            }
+
             let vec_pointer = &mut fonts as *mut Vec<String>;
 
-            gdi32::EnumFontFamiliesExW(hdc, lp_logfont, f, vec_pointer as LPARAM, 0);
+            gdi32::EnumFontFamiliesExW(hdc, property, f, vec_pointer as LPARAM, 0);
             gdi32::DeleteDC(hdc);
         }
         fonts

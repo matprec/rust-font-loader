@@ -38,7 +38,7 @@ pub mod system_fonts {
     static FC_WEIGHT: &'static [u8] = b"weight\0";
     static FC_INDEX: &'static [u8] = b"index\0";
     static FC_SLANT: &'static [u8] = b"slant\0";
-	static FC_SPACING: &'static[u8] = b"spacing\0";
+    static FC_SPACING: &'static [u8] = b"spacing\0";
     //  static FC_FONTFORMAT: &'static [u8] = b"fontformat\0";
     // 	static FC_STYLE: &'static [u8] = b"style\0";
     // 	static FC_FAMILYLANG: &'static[u8] = b"familylang\0";
@@ -63,10 +63,10 @@ pub mod system_fonts {
     static FC_SLANT_ITALIC: c_int = 100;
     static FC_SLANT_OBLIQUE: c_int = 110;
 
-	static FC_PROPORTIONAL: c_int = 0;
-//	static FC_DUAL: c_int = 90;
-	static FC_MONO: c_int = 100;
-//	static FC_CHARCELL: c_int = 110;
+    static FC_PROPORTIONAL: c_int = 0;
+    // 	static FC_DUAL: c_int = 90;
+    static FC_MONO: c_int = 100;
+    // 	static FC_CHARCELL: c_int = 110;
 
     static INIT_FONTCONFIG: Once = ONCE_INIT;
     static mut CONFIG: *mut FcConfig = ptr::null_mut();
@@ -83,8 +83,8 @@ pub mod system_fonts {
     pub struct FontProperty {
         slant: c_int,
         weight: c_int,
-		family: String,
-		spacing: Option<c_int>,
+        family: String,
+        spacing: Option<c_int>,
     }
 
     pub struct FontPropertyBuilder {
@@ -96,8 +96,8 @@ pub mod system_fonts {
             let property = FontProperty {
                 slant: FC_SLANT_ROMAN,
                 weight: FC_WEIGHT_REGULAR,
-				family: String::new(),
-				spacing: None,
+                family: String::new(),
+                spacing: None,
             };
             FontPropertyBuilder { property: property }
         }
@@ -117,16 +117,16 @@ pub mod system_fonts {
             self
         }
 
-		pub fn monospace(mut self) -> FontPropertyBuilder {
-			self.property.spacing = Some(FC_MONO);
-			self
-		}
+        pub fn monospace(mut self) -> FontPropertyBuilder {
+            self.property.spacing = Some(FC_MONO);
+            self
+        }
 
-		pub fn family(mut self, name: &str) -> FontPropertyBuilder {
-			self.property.family.clear();
-			self.property.family.push_str(name);
-			self
-		}
+        pub fn family(mut self, name: &str) -> FontPropertyBuilder {
+            self.property.family.clear();
+            self.property.family.push_str(name);
+            self
+        }
 
         pub fn build(self) -> FontProperty {
             self.property
@@ -135,7 +135,7 @@ pub mod system_fonts {
 
     pub fn get(property: &FontProperty) -> Option<(Vec<u8>, c_int)> {
         let config = init();
-		let family: &str = &property.family;
+        let family: &str = &property.family;
 
         unsafe {
             let name = CString::new(family).unwrap();
@@ -174,10 +174,10 @@ pub mod system_fonts {
             let config = init();
 
             let pattern = FcPatternCreate();
-			if !property.family.is_empty() {
-				add_string(pattern, FC_FAMILY, &property.family);
-			}
-			property.spacing.map(|spacing| add_int(pattern, FC_SPACING, spacing));
+            if !property.family.is_empty() {
+                add_string(pattern, FC_FAMILY, &property.family);
+            }
+            property.spacing.map(|spacing| add_int(pattern, FC_SPACING, spacing));
             add_int(pattern, FC_WEIGHT, property.weight);
             add_int(pattern, FC_SLANT, property.slant);
 
@@ -218,14 +218,14 @@ pub mod system_fonts {
         }
     }
 
-	fn add_string(pat: *mut FcPattern, object_name: &[u8], value: &str) {
-		let value = CString::new(value).unwrap();
-		let value_ptr = value.as_ptr() as *const FcChar8;
-		let object = object_name.as_ptr() as *const c_char;
-		unsafe {
-			FcPatternAddString(pat, object, value_ptr);
-		}
-	}
+    fn add_string(pat: *mut FcPattern, object_name: &[u8], value: &str) {
+        let value = CString::new(value).unwrap();
+        let value_ptr = value.as_ptr() as *const FcChar8;
+        let object = object_name.as_ptr() as *const c_char;
+        unsafe {
+            FcPatternAddString(pat, object, value_ptr);
+        }
+    }
 
     fn get_string(pat: *const FcPattern, object_name: &[u8]) -> Result<String, &str> {
         unsafe {
