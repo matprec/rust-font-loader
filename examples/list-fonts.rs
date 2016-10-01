@@ -27,7 +27,13 @@ fn main() {
         println!("{}", string);
     }
 
-	let mut property = system_fonts::FontPropertyBuilder::new().family("Arial").build();
-	let (font, _) = system_fonts::get(&mut property).unwrap();
+	let property = system_fonts::FontPropertyBuilder::new().monospace().build();
+	let sysfonts = system_fonts::query_specific(&property);
+	for string in &sysfonts {
+		println!("Monospaced font: {}", string);
+	}
+
+	let property = system_fonts::FontPropertyBuilder::new().family("Arial").build();
+	let (font, _) = system_fonts::get(&property).unwrap();
 	println!("{:?}", &font[..50]);
 }

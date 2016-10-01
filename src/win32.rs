@@ -66,6 +66,10 @@ pub mod system_fonts {
         pub fn oblique(self) -> FontPropertyBuilder {
             self.italic()
         }
+
+		pub fn monospace() -> FontPropertyBuilder() {
+			self.config.pfPitchAndFamily |= FIXED_PITCH;
+		}
         // pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
         // self.config.lfStrikeOut = strikeout as u8;
         // self
@@ -100,7 +104,7 @@ pub mod system_fonts {
         }
     }
 
-    pub fn get(config: &mut FontProperty) -> Option<(Vec<u8>, c_int)> {
+    pub fn get(config: &FontProperty) -> Option<(Vec<u8>, c_int)> {
         unsafe {
             let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
             let hfont = gdi32::CreateFontIndirectW(config as *const LOGFONTW);
