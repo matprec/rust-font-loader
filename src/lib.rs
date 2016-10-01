@@ -16,7 +16,60 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#![feature(const_fn)]
+//! # Font-Loader
+//! A font loading utility written in and for rust.
+//!
+//! Currently supported platforms:
+//!
+//! * Windows
+//! * Every platform supporting Fontconfig
+//!  * Unix
+//!  * Linux
+//!  * (Mac, not confirmed working)
+//!  * (Windows, but not used)
+//!
+//! # Usage
+//! ## Linux, Unix:
+//! Fontconfig is required on Linux and Unix, as it is the default Fontmanagement utility on these
+//! platforms.
+//!
+//! ```
+//! sudo apt-get install libfontconfig libfontconfig1-dev
+//! ```
+//!
+//! # Example
+//! ## Cargo.toml
+//! ```toml
+//! [dependencies]
+//! font-loader = "https://github.com/MSleepyPanda/rust-font-loader/"
+//! ```
+//!
+//! ## main.rs:
+//! ```rust
+//! extern crate font_loader as fonts;
+//!
+//! use fonts::system_fonts;
+//!
+//! fn main() {
+//! 	// Enumerate all fonts
+//!     let sysfonts = system_fonts::query_all();
+//!     for string in &sysfonts {
+//!         println!("{}", string);
+//!     }
+//!
+//! 	let mut property = system_fonts::FontPropertyBuilder::new().monospace().build();
+//! 	let sysfonts = system_fonts::query_specific(&mut property);
+//! 	for string in &sysfonts {
+//! 		println!("Monospaced font: {}", string);
+//! 	}
+//!
+//! 	let property = system_fonts::FontPropertyBuilder::new().family("Arial").build();
+//! 	let (font, _) = system_fonts::get(&property).unwrap();
+//! 	println!("{:?}", &font[..50]);
+//! }
+//! ```
+
+
 extern crate libc;
 
 #[cfg(target_os = "windows")]

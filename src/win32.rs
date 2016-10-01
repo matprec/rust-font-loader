@@ -16,6 +16,7 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/// Font loading utilities for installed system fonts
 pub mod system_fonts {
     use gdi32;
     use winapi::{c_int, c_void};
@@ -29,8 +30,10 @@ pub mod system_fonts {
     use std::ffi::{OsStr, OsString};
     use std::os::windows::ffi::{OsStrExt, OsStringExt};
 
+    /// The platform specific font properties
     pub type FontProperty = LOGFONTW;
 
+    /// Builder for FontProperty
     pub struct FontPropertyBuilder {
         config: FontProperty,
     }
@@ -105,6 +108,8 @@ pub mod system_fonts {
         }
     }
 
+    /// Get the binary data and index of a specific font
+    /// Note that only truetype fonts are supported
     pub fn get(config: &FontProperty) -> Option<(Vec<u8>, c_int)> {
         unsafe {
             let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
@@ -128,11 +133,15 @@ pub mod system_fonts {
         }
     }
 
+    /// Query the names of all fonts installed in the system
+    /// Note that only truetype fonts are supported
     pub fn query_all() -> Vec<String> {
         let mut config = FontPropertyBuilder::new().build();
         query_specific(&mut config)
     }
 
+    /// Query the names of specifc fonts installed in the system
+    /// Note that only truetype fonts are supported
     pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
 
         let mut fonts = Vec::new();

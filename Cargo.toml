@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["MSleepyPanda <m.sleepypanda@gmail.com>"]
 license = "MIT"
 readme = "Readme.md"
+documentation = "https://docs.rs/font-loader/"
+homepage = "https://github.com/MSleepyPanda/rust-font-loader"
+repository = "https://github.com/MSleepyPanda/rust-font-loader"
+keywords = ["font", "fonts","loading","loader", "wingdi", "fontconfig"]
 
 [dependencies]
 libc = "0.2.15"

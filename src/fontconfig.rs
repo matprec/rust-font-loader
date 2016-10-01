@@ -16,6 +16,7 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/// Font loading utilities for installed system fonts
 pub mod system_fonts {
     use fontconfig_sys::{FcConfig, FcInitLoadConfigAndFonts, FcNameParse};
     use fontconfig_sys::{FcPattern, FcPatternCreate, FcPatternDestroy, FcFontMatch};
@@ -27,6 +28,7 @@ pub mod system_fonts {
     use libc::{c_int, c_char};
 
     use std::ptr;
+    use std::slice;
     use std::ffi::{CStr, CString};
     use std::io::prelude::*;
     use std::fs::File;
@@ -63,13 +65,13 @@ pub mod system_fonts {
     static FC_SLANT_ITALIC: c_int = 100;
     static FC_SLANT_OBLIQUE: c_int = 110;
 
-    static FC_PROPORTIONAL: c_int = 0;
+    //    static FC_PROPORTIONAL: c_int = 0;
     // 	static FC_DUAL: c_int = 90;
     static FC_MONO: c_int = 100;
     // 	static FC_CHARCELL: c_int = 110;
 
     static INIT_FONTCONFIG: Once = ONCE_INIT;
-    static mut CONFIG: *mut FcConfig = ptr::null_mut();
+    static mut CONFIG: *mut FcConfig = 0 as *mut FcConfig;
 
     fn init() -> *mut FcConfig {
         unsafe {
@@ -80,6 +82,7 @@ pub mod system_fonts {
         }
     }
 
+    /// The platform specific font properties
     pub struct FontProperty {
         slant: c_int,
         weight: c_int,
@@ -87,6 +90,7 @@ pub mod system_fonts {
         spacing: Option<c_int>,
     }
 
+    /// Builder for FontProperty
     pub struct FontPropertyBuilder {
         property: FontProperty,
     }
@@ -133,6 +137,8 @@ pub mod system_fonts {
         }
     }
 
+    /// Get the binary data and index of a specific font
+    /// Note that only truetype fonts are supported
     pub fn get(property: &FontProperty) -> Option<(Vec<u8>, c_int)> {
         let config = init();
         let family: &str = &property.family;
@@ -162,12 +168,15 @@ pub mod system_fonts {
         }
     }
 
-    /// Querys the names of all fonts installed in the system
+    /// Query the names of all fonts installed in the system
+    /// Note that only truetype fonts are supported
     pub fn query_all() -> Vec<String> {
-        let property = FontPropertyBuilder::new().build();
-        query_specific(&property)
+        let mut property = FontPropertyBuilder::new().build();
+        query_specific(&mut property)
     }
 
+    /// Query the names of specifc fonts installed in the system
+    /// Note that only truetype fonts are supported
     pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
         let mut fonts: Vec<String> = Vec::new();
         unsafe {
@@ -186,9 +195,8 @@ pub mod system_fonts {
             let os = FcObjectSetBuild(o1, null_ptr);
             let fs = FcFontList(config, pattern, os);
 
-            for i in 0..(*fs).nfont {
-                let pat = (*fs).fonts.offset(i as isize);
-
+            let patterns = slice::from_raw_parts((*fs).fonts, (*fs).nfont as usize);
+            for pat in patterns {
                 let family_name = get_string(*pat, FC_FAMILY).unwrap();
                 fonts.push(family_name);
             }
