@@ -92,16 +92,19 @@ pub mod system_fonts {
             FontPropertyBuilder { property: property }
         }
 
-        pub fn italic(&mut self) {
+        pub fn italic(mut self) -> FontPropertyBuilder {
             self.property.slant = FC_SLANT_ITALIC;
+            self
         }
 
-        pub fn oblique(&mut self) {
+        pub fn oblique(mut self) -> FontPropertyBuilder {
             self.property.slant = FC_SLANT_OBLIQUE;
+            self
         }
 
-        pub fn bold(&mut self) {
+        pub fn bold(mut self) -> FontPropertyBuilder {
             self.property.weight = FC_WEIGHT_BOLD;
+            self
         }
 
         pub fn build(self) -> FontProperty {
@@ -109,7 +112,7 @@ pub mod system_fonts {
         }
     }
 
-    pub fn get(family: &str, property: &FontProperty) -> Option<(Vec<u8>, c_int)> {
+    pub fn get(family: &str, property: &mut FontProperty) -> Option<(Vec<u8>, c_int)> {
         let config = init();
 
         unsafe {
@@ -138,12 +141,12 @@ pub mod system_fonts {
     }
 
     /// Querys the names of all fonts installed in the system
-    pub fn query_names() -> Vec<String> {
+    pub fn query_all() -> Vec<String> {
         let property = FontPropertyBuilder::new().build();
         query_specific(&property)
     }
 
-    pub fn query_specific(property: &FontProperty) -> Vec<String> {
+    pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
         let mut fonts: Vec<String> = Vec::new();
         unsafe {
             let config = init();

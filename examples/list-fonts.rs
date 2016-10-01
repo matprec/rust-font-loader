@@ -22,15 +22,12 @@ use fonts::system_fonts;
 
 fn main() {
 	// Enumerate all fonts
-    let sysfonts = system_fonts::query_names();
+    let sysfonts = system_fonts::query_all();
     for string in &sysfonts {
         println!("{}", string);
     }
 
-	// Get the first font in the list and load its data
-	let family_name = sysfonts.get(0).unwrap();
-	let property = system_fonts::FontPropertyBuilder::new().build();
-	// font is a Vec<u8> with the data, index is the index of the font in the file
-	let (font, index) = system_fonts::get(, &property).unwrap();
+	let mut property = system_fonts::FontPropertyBuilder::new().family("Arial").build();
+	let (font, _) = system_fonts::get(&mut property).unwrap();
 	println!("{:?}", &font[..50]);
 }

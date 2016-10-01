@@ -16,141 +16,205 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use gdi32;
-use winapi::{c_int, c_void};
-use winapi::winnt::{PVOID, VOID};
-use winapi::wingdi::{ANSI_CHARSET, CLIP_DEFAULT_PRECIS, DEFAULT_PITCH, DEFAULT_QUALITY};
-use winapi::wingdi::{ENUMLOGFONTEXW, FF_DONTCARE, LOGFONTW, OUT_DEFAULT_PRECIS};
-use winapi::minwindef::{DWORD, LPARAM};
+pub mod system_fonts {
+    use gdi32;
+    use winapi::{c_int, c_void};
+    use winapi::winnt::{PVOID, VOID};
+    use winapi::wingdi::FIXED_PITCH;
+    use winapi::wingdi::{ENUMLOGFONTEXW, LOGFONTW};
+    use winapi::wingdi::FONTENUMPROCW;
+    use winapi::minwindef::{DWORD, LPARAM};
 
-use std::{mem, ptr};
-use std::ffi::{OsStr, OsString};
-use std::os::windows::ffi::{OsStrExt, OsStringExt};
+    use std::ptr;
+    use std::ffi::{OsStr, OsString};
+    use std::os::windows::ffi::{OsStrExt, OsStringExt};
 
-pub type FontConfig = LOGFONTW;
+    pub type FontProperty = LOGFONTW;
 
-pub struct FontConfigBuilder {
-    config: FontConfig,
-}
-
-impl FontConfigBuilder {
-    pub fn new() -> FontConfigBuilder {
-        let string: [u16; 32] = [0; 32];
-        FontConfigBuilder { config: FontConfig { lfFaceName: string, ..unsafe { mem::zeroed() } } }
+    pub struct FontPropertyBuilder {
+        config: FontProperty,
     }
 
-    pub fn italic(mut self, italic: bool) -> FontConfigBuilder {
-        self.config.lfItalic = italic as u8;
-        self
-    }
-    // pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
-    // self.config.lfStrikeOut = strikeout as u8;
-    // self
-    // }
-    //
-    // pub fn underline(mut self, underline: bool) -> FontConfigBuilder {
-    // self.config.lfUnderline = underline as u8;
-    // self
-    // }
-
-    pub fn weight(mut self, weight: usize) -> FontConfigBuilder {
-        self.config.lfWeight = weight as i32;
-        self
-    }
-
-    pub fn facename(mut self, name: &str) -> FontConfigBuilder {
-        if name.len() > 31 {
-            panic!("Font length
- must me smaller than 31");
+    impl FontPropertyBuilder {
+        pub fn new() -> FontPropertyBuilder {
+            let string: [u16; 32] = [0; 32];
+            FontPropertyBuilder {
+                config: FontProperty {
+                    lfHeight: 0,
+                    lfWidth: 0,
+                    lfEscapement: 0,
+                    lfOrientation: 0,
+                    lfWeight: 0,
+                    lfItalic: 0,
+                    lfUnderline: 0,
+                    lfStrikeOut: 0,
+                    lfCharSet: 0,
+                    lfOutPrecision: 0,
+                    lfClipPrecision: 0,
+                    lfQuality: 0,
+                    lfPitchAndFamily: 0,
+                    lfFaceName: string,
+                },
+            }
         }
-        let name: &OsStr = name.as_ref();
-        let buffer = name.encode_wide();
-        let mut string: [u16; 32] = [0; 32]; // +1 Null terminator
-        for (index, item) in buffer.enumerate() {
-            string[index] = item;
+
+        pub fn italic(mut self) -> FontPropertyBuilder {
+            self.config.lfItalic = true as u8;
+            self
         }
-        self.config.lfFaceName = string;
-        self
+
+        pub fn oblique(self) -> FontPropertyBuilder {
+            self.italic()
+        }
+        // pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
+        // self.config.lfStrikeOut = strikeout as u8;
+        // self
+        // }
+        //
+        // pub fn underline(mut self, underline: bool) -> FontConfigBuilder {
+        // self.config.lfUnderline = underline as u8;
+        // self
+        // }
+
+        pub fn bold(mut self) -> FontPropertyBuilder {
+            self.config.lfWeight = 700;
+            self
+        }
+
+        pub fn family(mut self, name: &str) -> FontPropertyBuilder {
+            if name.len() > 31 {
+                panic!("Font length must me smaller than 31");
+            }
+            let name: &OsStr = name.as_ref();
+            let buffer = name.encode_wide();
+            let mut string: [u16; 32] = [0; 32]; // +1 Null terminator
+            for (index, item) in buffer.enumerate() {
+                string[index] = item;
+            }
+            self.config.lfFaceName = string;
+            self
+        }
+
+        pub fn build(self) -> FontProperty {
+            self.config
+        }
     }
 
-    pub fn build(self) -> FontConfig {
-        self.config
-    }
-}
-
-pub struct SystemFonts {
-    fonts: Vec<String>,
-}
-
-impl SystemFonts {
-    pub fn new() -> SystemFonts {
-        SystemFonts { fonts: Vec::new() }
-    }
-
-    pub fn font_by_name(&self, config: FontConfig) -> Result<Vec<u8>, ()> {
+    pub fn get(config: &mut FontProperty) -> Option<(Vec<u8>, c_int)> {
         unsafe {
             let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
-            let hfont = gdi32::CreateFontIndirectW(&config as *const LOGFONTW);
+            let hfont = gdi32::CreateFontIndirectW(config as *const LOGFONTW);
             gdi32::SelectObject(hdc, hfont as *mut c_void);
             let size = gdi32::GetFontData(hdc, 0, 0, ptr::null_mut(), 0);
-            println!("size: {}", size);
             if size == 0xFFFFFFFF {
-                Err(())
+                gdi32::DeleteDC(hdc);
+                None
             } else if size > 0 {
                 let mut buffer: Vec<u8> = vec![0; size as usize];
                 let pointer = buffer.first_mut().unwrap() as *mut _ as PVOID;
                 let size = gdi32::GetFontData(hdc, 0, 0, pointer, size);
                 buffer.set_len(size as usize);
                 gdi32::DeleteDC(hdc);
-                Ok(buffer)
+                Some((buffer, 0))
             } else {
                 gdi32::DeleteDC(hdc);
-                Err(())
+                None
             }
         }
     }
 
-    #[allow(non_snake_case)]
-    pub fn enumerate_fonts(&mut self) -> &Vec<String> {
+    pub fn query_all() -> Vec<String> {
+        let mut config = FontPropertyBuilder::new().build();
+        query(&mut config, Some(callback_ttf))
+    }
+
+    pub fn query_monospace() -> Vec<String> {
+        let mut config = FontPropertyBuilder::new().build();
+        query(&mut config, Some(callback_monospace))
+    }
+
+    pub fn query_specific(config: &mut FontProperty) -> Vec<String> {
+        query(config, Some(callback_ttf))
+    }
+
+
+    fn query(lp_logfont: &mut LOGFONTW, f: FONTENUMPROCW) -> Vec<String> {
+
+        let mut fonts = Vec::new();
         unsafe {
             let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
-            let string: [u16; 32] = [0; 32];
 
-            let mut lpLogfont = LOGFONTW {
-                lfHeight: 0,
-                lfWidth: 0,
-                lfEscapement: 0,
-                lfOrientation: 0,
-                lfWeight: 0,
-                lfItalic: false as u8,
-                lfUnderline: false as u8,
-                lfStrikeOut: false as u8,
-                lfCharSet: ANSI_CHARSET as u8,
-                lfOutPrecision: OUT_DEFAULT_PRECIS as u8,
-                lfClipPrecision: CLIP_DEFAULT_PRECIS as u8,
-                lfQuality: DEFAULT_QUALITY as u8,
-                lfPitchAndFamily: (DEFAULT_PITCH | FF_DONTCARE) as u8,
-                lfFaceName: string,
-            };
+            let vec_pointer = &mut fonts as *mut Vec<String>;
 
-            let self_pointer = self as *mut SystemFonts;
-
-            gdi32::EnumFontFamiliesExW(hdc,
-                                       &mut lpLogfont,
-                                       Some(SystemFonts::callback),
-                                       self_pointer as LPARAM,
-                                       0);
+            gdi32::EnumFontFamiliesExW(hdc, lp_logfont, f, vec_pointer as LPARAM, 0);
             gdi32::DeleteDC(hdc);
         }
-        &self.fonts
+        fonts
+    }
+
+    pub fn print_logfontw(l: &LOGFONTW) {
+        // let name_2 = OsString::from_wide(&l.lfFaceName);
+        // let name = name_2.to_str().unwrap();
+
+        let name_array = l.lfFaceName;
+        let pos = name_array.iter().position(|c| *c == 0).unwrap();
+        let name_array = &name_array[0..pos];
+
+        let name = OsString::from_wide(name_array).into_string().unwrap();
+        println!("height:{} width:{} escapement:{} orientation:{} weight:{} italic:{} underline:{}
+strikeout:{} charset:{} outprecision:{} clipprecision:{} quality:{} quality:{}
+pichandfamily:{} ",
+                 l.lfHeight,
+                 l.lfWidth,
+                 l.lfEscapement,
+                 l.lfOrientation,
+                 l.lfWeight,
+                 l.lfItalic,
+                 l.lfUnderline,
+                 l.lfStrikeOut,
+                 l.lfCharSet,
+                 l.lfOutPrecision,
+                 l.lfClipPrecision,
+                 l.lfQuality,
+                 l.lfPitchAndFamily,
+                 name);
     }
 
     #[allow(non_snake_case)]
-    unsafe extern "system" fn callback(lpelfe: *const LOGFONTW,
-                                       _: *const VOID,
-                                       _: DWORD,
-                                       lparam: LPARAM)
-                                       -> c_int {
+    unsafe extern "system" fn callback_ttf(lpelfe: *const LOGFONTW,
+                                           _: *const VOID,
+                                           fonttype: DWORD,
+                                           lparam: LPARAM)
+                                           -> c_int {
+
+        if fonttype != 4 {
+            return 1;
+        }
+
+        add_vec(lpelfe, lparam);
+
+        1
+    }
+
+    #[allow(non_snake_case)]
+    unsafe extern "system" fn callback_monospace(lpelfe: *const LOGFONTW,
+                                                 _: *const VOID,
+                                                 fonttype: DWORD,
+                                                 lparam: LPARAM)
+                                                 -> c_int {
+        if fonttype != 4 {
+            return 1;
+        }
+
+        if ((*lpelfe).lfPitchAndFamily & FIXED_PITCH as u8) == 0 {
+            return 1;
+        }
+        add_vec(lpelfe, lparam);
+
+        1
+    }
+
+    unsafe fn add_vec(lpelfe: *const LOGFONTW, lparam: LPARAM) {
         let lpelfe = lpelfe as *const ENUMLOGFONTEXW;
 
         let name_array = (*lpelfe).elfFullName;
@@ -160,11 +224,9 @@ impl SystemFonts {
         let name = OsString::from_wide(name_array).into_string().unwrap();
 
         if name.chars().next() != Some('@') {
-            let systemfonts = lparam as *mut SystemFonts;
-            let ref mut systemfonts = *systemfonts;
-            systemfonts.fonts.push(name);
+            let vec_pointer = lparam as *mut Vec<String>;
+            let ref mut fonts = *vec_pointer;
+            fonts.push(name);
         }
-
-        1
     }
 }
