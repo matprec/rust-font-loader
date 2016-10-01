@@ -8,6 +8,7 @@ documentation = "https://docs.rs/font-loader/"
 homepage = "https://github.com/MSleepyPanda/rust-font-loader"
 repository = "https://github.com/MSleepyPanda/rust-font-loader"
 keywords = ["font", "fonts","loading","loader", "wingdi", "fontconfig"]
+description = "A font loading utility written in and for rust."
 
 [dependencies]
 libc = "0.2.15"
