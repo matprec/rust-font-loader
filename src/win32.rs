@@ -27,6 +27,7 @@ pub mod system_fonts {
     use winapi::minwindef::{DWORD, LPARAM};
 
     use std::ptr;
+    use std::mem;
     use std::ffi::{OsStr, OsString};
     use std::os::windows::ffi::{OsStrExt, OsStringExt};
 
@@ -74,15 +75,6 @@ pub mod system_fonts {
             self.config.lfPitchAndFamily |= FIXED_PITCH as u8;
             self
         }
-        // pub fn strikeout(mut self, strikeout: bool) -> FontConfigBuilder {
-        // self.config.lfStrikeOut = strikeout as u8;
-        // self
-        // }
-        //
-        // pub fn underline(mut self, underline: bool) -> FontConfigBuilder {
-        // self.config.lfUnderline = underline as u8;
-        // self
-        // }
 
         pub fn bold(mut self) -> FontPropertyBuilder {
             self.config.lfWeight = 700;
@@ -133,6 +125,18 @@ pub mod system_fonts {
         }
     }
 
+    pub fn get_native(config: &mut FontProperty) -> FontProperty {
+        let f: FONTENUMPROCW = Some(callback_native);
+        unsafe {
+            let mut logfont: LOGFONTW = mem::zeroed();
+            let pointer = &mut logfont as *mut _;
+            let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
+            gdi32::EnumFontFamiliesExW(hdc, config, f, pointer as LPARAM, 0);
+            gdi32::DeleteDC(hdc);
+            logfont
+        }
+    }
+
     /// Query the names of all fonts installed in the system
     /// Note that only truetype fonts are supported
     pub fn query_all() -> Vec<String> {
@@ -159,34 +163,6 @@ pub mod system_fonts {
             gdi32::DeleteDC(hdc);
         }
         fonts
-    }
-
-    pub fn print_logfontw(l: &LOGFONTW) {
-        // let name_2 = OsString::from_wide(&l.lfFaceName);
-        // let name = name_2.to_str().unwrap();
-
-        let name_array = l.lfFaceName;
-        let pos = name_array.iter().position(|c| *c == 0).unwrap();
-        let name_array = &name_array[0..pos];
-
-        let name = OsString::from_wide(name_array).into_string().unwrap();
-        println!("height:{} width:{} escapement:{} orientation:{} weight:{} italic:{} underline:{}
-strikeout:{} charset:{} outprecision:{} clipprecision:{} quality:{} quality:{}
-pichandfamily:{} ",
-                 l.lfHeight,
-                 l.lfWidth,
-                 l.lfEscapement,
-                 l.lfOrientation,
-                 l.lfWeight,
-                 l.lfItalic,
-                 l.lfUnderline,
-                 l.lfStrikeOut,
-                 l.lfCharSet,
-                 l.lfOutPrecision,
-                 l.lfClipPrecision,
-                 l.lfQuality,
-                 l.lfPitchAndFamily,
-                 name);
     }
 
     #[allow(non_snake_case)]
@@ -238,4 +214,21 @@ pichandfamily:{} ",
             fonts.push(name);
         }
     }
+
+    #[allow(non_snake_case)]
+    unsafe extern "system" fn callback_native(lpelfe: *const LOGFONTW,
+                                              _: *const VOID,
+                                              fonttype: DWORD,
+                                              lparam: LPARAM)
+                                              -> c_int {
+
+        if fonttype != 4 {
+            return 1;
+        }
+
+        ptr::copy(lpelfe, lparam as *mut _, 1);
+
+        0
+    }
+
 }
