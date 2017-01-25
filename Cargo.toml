@@ -17,5 +17,9 @@ winapi = "0.2"
 user32-sys = "0.2"
 gdi32-sys = "0.2.0"
 
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(target_os = "macos")'.dependencies]
+core-text = "3.0.0"
+core-foundation = "0.3.0"
+
+[target.'not(any(cfg(windows),cfg(macos)))'.dependencies]
 silverknife-fontconfig-sys = "0.1.0"

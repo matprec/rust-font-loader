@@ -84,9 +84,18 @@ mod win32;
 #[cfg(target_os = "windows")]
 pub use win32::*;
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "macos")]
+extern crate core_text;
+#[cfg(target_os = "macos")]
+extern crate core_foundation;
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+pub use macos::*;
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 extern crate fontconfig_sys;
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 mod fontconfig;
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 pub use fontconfig::*;
