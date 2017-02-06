@@ -1,6 +1,6 @@
 [package]
 name = "font-loader"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["MSleepyPanda <m.sleepypanda@gmail.com>"]
 license = "MIT"
 readme = "Readme.md"

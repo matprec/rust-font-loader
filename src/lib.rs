@@ -22,11 +22,8 @@
 //! Currently supported platforms:
 //!
 //! * Windows
-//! * Every platform supporting Fontconfig
-//!  * Unix
-//!  * Linux
-//!  * (Mac, not confirmed working)
-//!  * (Windows, but not used)
+//! * Mac
+//! * *nix systems
 //!
 //! # Usage
 //! ## Linux, Unix:
@@ -93,9 +90,9 @@ mod macos;
 #[cfg(target_os = "macos")]
 pub use macos::*;
 
-#[cfg(all(target_os = "unix", not(target_os = "macos")))]
+#[cfg(all(unix, not(target_os = "macos")))]
 extern crate fontconfig_sys;
-#[cfg(all(target_os = "unix", not(target_os = "macos")))]
+#[cfg(all(unix, not(target_os = "macos")))]
 mod fontconfig;
-#[cfg(all(target_os = "unix", not(target_os = "macos")))]
+#[cfg(all(unix, not(target_os = "macos")))]
 pub use fontconfig::*;
