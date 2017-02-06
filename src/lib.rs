@@ -93,9 +93,9 @@ mod macos;
 #[cfg(target_os = "macos")]
 pub use macos::*;
 
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+#[cfg(all(target_os = "unix", not(target_os = "macos")))]
 extern crate fontconfig_sys;
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+#[cfg(all(target_os = "unix", not(target_os = "macos")))]
 mod fontconfig;
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+#[cfg(all(target_os = "unix", not(target_os = "macos")))]
 pub use fontconfig::*;
