@@ -30,7 +30,7 @@
 //! Fontconfig is required on Linux and Unix, as it is the default Fontmanagement utility on these
 //! platforms.
 //!
-//! ```
+//! ```shell
 //! sudo apt-get install libfontconfig libfontconfig1-dev
 //! ```
 //!
