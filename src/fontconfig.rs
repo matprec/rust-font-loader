@@ -18,12 +18,12 @@
 
 /// Font loading utilities for installed system fonts
 pub mod system_fonts {
-    use servo_fontconfig::fontconfig::{FcConfig, FcInitLoadConfigAndFonts, FcNameParse};
-    use servo_fontconfig::fontconfig::{FcPattern, FcPatternCreate, FcPatternDestroy, FcFontMatch};
-    use servo_fontconfig::fontconfig::{FcFontList, FcObjectSetBuild, FcChar8, FcDefaultSubstitute};
-    use servo_fontconfig::fontconfig::{FcPatternGetString, FcPatternAddInteger, FcPatternGetInteger};
-    use servo_fontconfig::fontconfig::{FcResultMatch, FcMatchPattern, FcResultNoMatch, FcConfigSubstitute};
-    use servo_fontconfig::fontconfig::FcPatternAddString;
+    use fontconfig::fontconfig::{FcConfig, FcInitLoadConfigAndFonts, FcNameParse};
+    use fontconfig::fontconfig::{FcPattern, FcPatternCreate, FcPatternDestroy, FcFontMatch};
+    use fontconfig::fontconfig::{FcFontList, FcObjectSetBuild, FcChar8, FcDefaultSubstitute};
+    use fontconfig::fontconfig::{FcPatternGetString, FcPatternAddInteger, FcPatternGetInteger};
+    use fontconfig::fontconfig::{FcResultMatch, FcMatchPattern, FcResultNoMatch, FcConfigSubstitute};
+    use fontconfig::fontconfig::FcPatternAddString;
 
     use libc::{c_int, c_char};
 
