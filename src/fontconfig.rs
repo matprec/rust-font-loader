@@ -18,12 +18,12 @@
 
 /// Font loading utilities for installed system fonts
 pub mod system_fonts {
-    use fontconfig::fontconfig::{FcConfig, FcInitLoadConfigAndFonts, FcNameParse};
-    use fontconfig::fontconfig::{FcPattern, FcPatternCreate, FcPatternDestroy, FcFontMatch};
-    use fontconfig::fontconfig::{FcFontList, FcObjectSetBuild, FcChar8, FcDefaultSubstitute};
-    use fontconfig::fontconfig::{FcPatternGetString, FcPatternAddInteger, FcPatternGetInteger};
-    use fontconfig::fontconfig::{FcResultMatch, FcMatchPattern, FcResultNoMatch, FcConfigSubstitute};
-    use fontconfig::fontconfig::FcPatternAddString;
+    use servo_fontconfig::fontconfig::{FcConfig, FcInitLoadConfigAndFonts, FcNameParse};
+    use servo_fontconfig::fontconfig::{FcPattern, FcPatternCreate, FcPatternDestroy, FcFontMatch};
+    use servo_fontconfig::fontconfig::{FcFontList, FcObjectSetBuild, FcChar8, FcDefaultSubstitute};
+    use servo_fontconfig::fontconfig::{FcPatternGetString, FcPatternAddInteger, FcPatternGetInteger};
+    use servo_fontconfig::fontconfig::{FcResultMatch, FcMatchPattern, FcResultNoMatch, FcConfigSubstitute};
+    use servo_fontconfig::fontconfig::FcPatternAddString;
 
     use libc::{c_int, c_char};
 
@@ -214,7 +214,7 @@ pub mod system_fonts {
         }
     }
 
-    fn get_int(pat: *const FcPattern, object_name: &[u8]) -> Result<c_int, &str> {
+    fn get_int(pat: *mut FcPattern, object_name: &[u8]) -> Result<c_int, &str> {
         let object = object_name.as_ptr() as *const c_char;
         unsafe {
             let mut int: c_int = 0;
@@ -235,7 +235,7 @@ pub mod system_fonts {
         }
     }
 
-    fn get_string(pat: *const FcPattern, object_name: &[u8]) -> Result<String, &str> {
+    fn get_string(pat: *mut FcPattern, object_name: &[u8]) -> Result<String, &str> {
         unsafe {
             let mut string: *mut FcChar8 = ptr::null_mut();
             let object = object_name.as_ptr() as *const c_char;

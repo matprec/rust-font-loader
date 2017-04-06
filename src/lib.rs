@@ -91,7 +91,7 @@ mod macos;
 pub use macos::*;
 
 #[cfg(all(unix, not(target_os = "macos")))]
-extern crate fontconfig;
+extern crate fontconfig as servo_fontconfig;
 #[cfg(all(unix, not(target_os = "macos")))]
 mod fontconfig;
 #[cfg(all(unix, not(target_os = "macos")))]
