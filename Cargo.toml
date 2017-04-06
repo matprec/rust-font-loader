@@ -23,4 +23,4 @@ core-text = "4.0.0"
 core-foundation = "0.3.0"
 
 [target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
-servo-fontconfig = {path = "../Projekte/rust-fontconfig"}
+servo-fontconfig = {git = "https://github.com/MSleepyPanda/rust-fontconfig"}
