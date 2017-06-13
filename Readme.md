@@ -1,6 +1,8 @@
 # Font-Loader
 A font loading utility written in and for rust.
 
+[![Build Status](https://travis-ci.org/MSleepyPanda/rust-font-loader.svg?branch=master)](https://travis-ci.org/MSleepyPanda/rust-font-loader)
+
 Currently supported platforms:
 
 * Windows
