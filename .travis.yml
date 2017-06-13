@@ -5,8 +5,8 @@ rust:
 os:
   - linux
   - osx
-addons:
-  apt:
-    packages:
-      - libfontconfig
-      - libfontconfig1-dev
+#addons:
+#  apt:
+#    packages:
+#      - libfontconfig
+#      - libfontconfig1-dev
