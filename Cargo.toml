@@ -23,4 +23,4 @@ core-text = "5.0.0"
 core-foundation = "0.3.0"
 
 [target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
-servo-fontconfig = {git = "https://github.com/MSleepyPanda/rust-fontconfig", rev = "d3f81eb", default-features = false}
+servo-fontconfig = "0.4.0"
