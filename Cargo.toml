@@ -19,8 +19,8 @@ user32-sys = "0.2"
 gdi32-sys = "0.2.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-core-text = "5.0.0"
-core-foundation = "0.3.0"
+core-text = "5.0"
+core-foundation = "0.3"
 
 [target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
 servo-fontconfig = "0.4.0"
