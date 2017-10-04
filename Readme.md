@@ -8,10 +8,8 @@ Currently supported platforms:
 * Windows
 * Mac
 * Every platform supporting Fontconfig
- * Unix
- * Linux
- * (Mac, not confirmed working)
- * (Windows, but not used)
+  * Unix
+  * Linux
 
 # Usage
 ## Linux, Unix:
