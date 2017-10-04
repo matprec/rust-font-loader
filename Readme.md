@@ -6,6 +6,7 @@ A font loading utility written in and for rust.
 Currently supported platforms:
 
 * Windows
+* Mac
 * Every platform supporting Fontconfig
  * Unix
  * Linux
