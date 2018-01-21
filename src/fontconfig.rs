@@ -25,6 +25,8 @@ pub mod system_fonts {
     use servo_fontconfig::fontconfig::{FcResultMatch, FcMatchPattern, FcResultNoMatch, FcConfigSubstitute};
     use servo_fontconfig::fontconfig::FcPatternAddString;
 
+    use failure::Error;
+
     use libc::{c_int, c_char};
 
     use std::ptr;
@@ -72,6 +74,14 @@ pub mod system_fonts {
 
     static INIT_FONTCONFIG: Once = ONCE_INIT;
     static mut CONFIG: *mut FcConfig = 0 as *mut FcConfig;
+
+    #[derive(Debug, Fail)]
+    pub enum LoaderError {
+        #[fail(display = "font not present: {}", _0)]
+        NotFound(String),
+        #[fail(display = "fontconfig error: {}", _0)]
+        FontConfig(String),
+    }
 
     fn init() -> *mut FcConfig {
         unsafe {
@@ -139,12 +149,12 @@ pub mod system_fonts {
 
     /// Get the binary data and index of a specific font
     /// Note that only truetype fonts are supported
-    pub fn get(property: &FontProperty) -> Option<(Vec<u8>, c_int)> {
+    pub fn get(property: &FontProperty) -> Result<(Vec<u8>, c_int), Error> {
         let config = init();
         let family: &str = &property.family;
 
         unsafe {
-            let name = CString::new(family).unwrap();
+            let name = CString::new(family)?;
             let pat = FcNameParse(name.as_ptr() as *const FcChar8);
             add_int(pat, FC_SLANT, property.slant);
             add_int(pat, FC_WEIGHT, property.weight);
@@ -155,36 +165,36 @@ pub mod system_fonts {
             let font_pat = FcFontMatch(config, pat, &mut result);
 
             if font_pat.is_null() {
-                None
+                Err(LoaderError::NotFound(family.to_string()).into())
             } else {
-                let file = get_string(font_pat, FC_FILE).unwrap();
-                let index = get_int(font_pat, FC_INDEX).unwrap();
+                let path = get_string(font_pat, FC_FILE)?;
+                let index = get_int(font_pat, FC_INDEX)?;
                 FcPatternDestroy(font_pat);
-                let mut file = File::open(file).unwrap();
+                let mut file = File::open(path)?;
                 let mut buf: Vec<u8> = Vec::new();
                 let _ = file.read_to_end(&mut buf);
-                Some((buf, index))
+                Ok((buf, index))
             }
         }
     }
 
     /// Query the names of all fonts installed in the system
     /// Note that only truetype fonts are supported
-    pub fn query_all() -> Vec<String> {
+    pub fn query_all() -> Result<Vec<String>, Error> {
         let mut property = FontPropertyBuilder::new().build();
         query_specific(&mut property)
     }
 
     /// Query the names of specifc fonts installed in the system
     /// Note that only truetype fonts are supported
-    pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
+    pub fn query_specific(property: &mut FontProperty) -> Result<Vec<String>, Error> {
         let mut fonts: Vec<String> = Vec::new();
         unsafe {
             let config = init();
 
             let pattern = FcPatternCreate();
             if !property.family.is_empty() {
-                add_string(pattern, FC_FAMILY, &property.family);
+                add_string(pattern, FC_FAMILY, &property.family)?;
             }
             property.spacing.map(|spacing| add_int(pattern, FC_SPACING, spacing));
             add_int(pattern, FC_WEIGHT, property.weight);
@@ -197,14 +207,14 @@ pub mod system_fonts {
 
             let patterns = slice::from_raw_parts((*fs).fonts, (*fs).nfont as usize);
             for pat in patterns {
-                let family_name = get_string(*pat, FC_FAMILY).unwrap();
+                let family_name = get_string(*pat, FC_FAMILY)?;
                 fonts.push(family_name);
             }
         }
 
         fonts.sort();
         fonts.dedup();
-        fonts
+        Ok(fonts)
     }
 
     fn add_int(pat: *mut FcPattern, object_name: &[u8], value: c_int) {
@@ -214,28 +224,29 @@ pub mod system_fonts {
         }
     }
 
-    fn get_int(pat: *mut FcPattern, object_name: &[u8]) -> Result<c_int, &str> {
+    fn get_int(pat: *mut FcPattern, object_name: &[u8]) -> Result<c_int, LoaderError> {
         let object = object_name.as_ptr() as *const c_char;
         unsafe {
             let mut int: c_int = 0;
             if FcPatternGetInteger(pat, object, 0, &mut int) == FcResultMatch {
                 Ok(int)
             } else {
-                Err("Type didn't match")
+                Err(LoaderError::FontConfig("Type didn't match in FcPatternGetInteger".to_string()))
             }
         }
     }
 
-    fn add_string(pat: *mut FcPattern, object_name: &[u8], value: &str) {
-        let value = CString::new(value).unwrap();
+    fn add_string(pat: *mut FcPattern, object_name: &[u8], value: &str) -> Result<(), Error> {
+        let value = CString::new(value)?;
         let value_ptr = value.as_ptr() as *const FcChar8;
         let object = object_name.as_ptr() as *const c_char;
         unsafe {
             FcPatternAddString(pat, object, value_ptr);
         }
+        Ok(())
     }
 
-    fn get_string(pat: *mut FcPattern, object_name: &[u8]) -> Result<String, &str> {
+    fn get_string(pat: *mut FcPattern, object_name: &[u8]) -> Result<String, LoaderError> {
         unsafe {
             let mut string: *mut FcChar8 = ptr::null_mut();
             let object = object_name.as_ptr() as *const c_char;
@@ -244,7 +255,7 @@ pub mod system_fonts {
                 let string = cstr.to_string_lossy().into_owned();
                 Ok(string)
             } else {
-                Err("Type didn't match")
+                Err(LoaderError::FontConfig("Type didn't match in FcPatternGetString".to_string()))
             }
         }
     }
