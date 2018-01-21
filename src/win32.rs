@@ -139,15 +139,14 @@ pub mod system_fonts {
 
     /// Query the names of all fonts installed in the system
     /// Note that only truetype fonts are supported
-    pub fn query_all() -> Vec<String> {
+    pub fn query_all() -> Result<Vec<String>, Error> {
         let mut config = FontPropertyBuilder::new().build();
-        query_specific(&mut config)
+        Ok(query_specific(&mut config))
     }
 
     /// Query the names of specifc fonts installed in the system
     /// Note that only truetype fonts are supported
-    pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
-
+    pub fn query_specific(property: &mut FontProperty) -> Result<Vec<String>, Error> {
         let mut fonts = Vec::new();
         let mut f: FONTENUMPROCW = Some(callback_ttf);
         unsafe {
@@ -162,7 +161,7 @@ pub mod system_fonts {
             gdi32::EnumFontFamiliesExW(hdc, property, f, vec_pointer as LPARAM, 0);
             gdi32::DeleteDC(hdc);
         }
-        fonts
+        Ok(fonts)
     }
 
     #[allow(non_snake_case)]

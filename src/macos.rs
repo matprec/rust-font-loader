@@ -106,7 +106,7 @@ pub mod system_fonts {
     }
 
     /// Query the names of all fonts installed in the system
-    pub fn query_all() -> Vec<String> {
+    pub fn query_all() -> Result<Vec<String>, Error> {
         let family_names = core_text::font_collection::get_family_names();
         family_names.iter().map(|strref| {
             let family_name_ref: CFStringRef = unsafe { mem::transmute(strref) };
@@ -115,7 +115,7 @@ pub mod system_fonts {
     }
 
     /// Query the names of specifc fonts installed in the system
-    pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
+    pub fn query_specific(property: &mut FontProperty) -> Result<Vec<String>, Error> {
         let descs: CFArray =
         unsafe {
             let descs = CTFontDescriptorCreateMatchingFontDescriptors(property.as_concrete_TypeRef(),

@@ -22,13 +22,13 @@ use fonts::system_fonts;
 
 fn main() {
 	// Enumerate all fonts
-    let sysfonts = system_fonts::query_all();
+    let sysfonts = system_fonts::query_all().unwrap();
     for string in &sysfonts {
         println!("{}", string);
     }
 
 	let mut property = system_fonts::FontPropertyBuilder::new().monospace().build();
-	let sysfonts = system_fonts::query_specific(&mut property);
+	let sysfonts = system_fonts::query_specific(&mut property).unwrap();
 	for string in &sysfonts {
 		println!("Monospaced font: {}", string);
 	}
