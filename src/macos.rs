@@ -24,12 +24,12 @@ pub mod system_fonts {
     use std::fs::File;
     use std::mem;
     use std::ptr;
-    use core_foundation::string::{CFString, CFStringRef};
+    use core_foundation::string::CFString;
     use core_foundation::number::CFNumber;
     use core_foundation::array::CFArray;
     use core_foundation::dictionary::CFDictionary;
     use core_foundation::base::{CFType, TCFType};
-    use core_foundation::url::{CFURL, CFURLRef, CFURLCopyFileSystemPath, kCFURLPOSIXPathStyle};
+    use core_foundation::url::{CFURL, CFURLCopyFileSystemPath, kCFURLPOSIXPathStyle};
     use libc::c_int;
     use std::io::Read;
     /// The platform specific font properties
@@ -75,7 +75,7 @@ pub mod system_fonts {
             let family_name: CFString = self.family.parse().unwrap();
             let traits_attr: CFString = unsafe { TCFType::wrap_under_get_rule(kCTFontTraitsAttribute) };
             let symbolic_traits_attr: CFString = unsafe { TCFType::wrap_under_get_rule(kCTFontSymbolicTrait) };
-            let traits = CFDictionary::from_CFType_pairs(&[(symbolic_traits_attr.as_CFType(), CFNumber::from_i32(self.symbolic_traits as i32).as_CFType())]);
+            let traits = CFDictionary::from_CFType_pairs(&[(symbolic_traits_attr.as_CFType(), CFNumber::from(self.symbolic_traits as i32).as_CFType())]);
             let mut attributes = Vec::new();
             attributes.push((traits_attr.as_CFType(), traits.as_CFType()));
             if self.family.len() != 0 {
@@ -91,40 +91,44 @@ pub mod system_fonts {
         let mut buffer = Vec::new();
         let path;
         unsafe {
-            let value = CTFontDescriptorCopyAttribute(config.as_concrete_TypeRef(), kCTFontURLAttribute);
+            let value =
+                CTFontDescriptorCopyAttribute(config.as_concrete_TypeRef(), kCTFontURLAttribute);
             assert!(!value.is_null());
 
             let value: CFType = TCFType::wrap_under_get_rule(value);
-            assert!(value.instance_of::<CFURLRef,CFURL>());
+            assert!(value.instance_of::<CFURL>());
             let url: CFURL = TCFType::wrap_under_get_rule(mem::transmute(value.as_CFTypeRef()));
-            path = CFString::wrap_under_create_rule(CFURLCopyFileSystemPath(url.as_concrete_TypeRef(), kCFURLPOSIXPathStyle));
+            path = CFString::wrap_under_create_rule(CFURLCopyFileSystemPath(
+                url.as_concrete_TypeRef(),
+                kCFURLPOSIXPathStyle,
+            ));
         }
         match File::open(path.to_string()).and_then(|mut f| f.read_to_end(&mut buffer)) {
-            Ok(_) => { Some((buffer, 0)) }
-            Err(_) => { None }
+            Ok(_) => Some((buffer, 0)),
+            Err(_) => None,
         }
     }
 
     /// Query the names of all fonts installed in the system
     pub fn query_all() -> Vec<String> {
-        let family_names = core_text::font_collection::get_family_names();
-        family_names.iter().map(|strref| {
-            let family_name_ref: CFStringRef = unsafe { mem::transmute(strref) };
-            let family_name_cf: CFString = unsafe { TCFType::wrap_under_get_rule(family_name_ref) };
-            family_name_cf.to_string()}).collect()
+        core_text::font_collection::get_family_names()
+            .iter()
+            .map(|family_name| family_name.to_string())
+            .collect()
     }
 
     /// Query the names of specifc fonts installed in the system
     pub fn query_specific(property: &mut FontProperty) -> Vec<String> {
-        let descs: CFArray =
-        unsafe {
-            let descs = CTFontDescriptorCreateMatchingFontDescriptors(property.as_concrete_TypeRef(),
-                                                                      ptr::null());
+        let descs: CFArray<CTFontDescriptor> = unsafe {
+            let descs = CTFontDescriptorCreateMatchingFontDescriptors(
+                property.as_concrete_TypeRef(),
+                ptr::null(),
+            );
             TCFType::wrap_under_create_rule(descs)
         };
-        descs.iter().map(|desc| {
-                         let desc : CTFontDescriptor = unsafe { TCFType::wrap_under_get_rule(mem::transmute(desc))};
-                         desc.family_name()
-                         }).collect::<Vec<_>>()
+        descs
+            .iter()
+            .map(|desc| desc.family_name())
+            .collect::<Vec<_>>()
     }
 }
