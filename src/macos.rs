@@ -29,7 +29,7 @@ pub mod system_fonts {
     use core_foundation::array::CFArray;
     use core_foundation::dictionary::CFDictionary;
     use core_foundation::base::{CFType, TCFType};
-    use core_foundation::url::{CFURL, CFURLCopyFileSystemPath, kCFURLPOSIXPathStyle};
+    use core_foundation::url::CFURL;
     use libc::c_int;
     use std::io::Read;
     /// The platform specific font properties
@@ -89,7 +89,7 @@ pub mod system_fonts {
     /// Get the binary data and index of a specific font
     pub fn get(config: &FontProperty) -> Option<(Vec<u8>, c_int)> {
         let mut buffer = Vec::new();
-        let path;
+        let url: CFURL;
         unsafe {
             let value =
                 CTFontDescriptorCopyAttribute(config.as_concrete_TypeRef(), kCTFontURLAttribute);
@@ -97,13 +97,10 @@ pub mod system_fonts {
 
             let value: CFType = TCFType::wrap_under_get_rule(value);
             assert!(value.instance_of::<CFURL>());
-            let url: CFURL = TCFType::wrap_under_get_rule(mem::transmute(value.as_CFTypeRef()));
-            path = CFString::wrap_under_create_rule(CFURLCopyFileSystemPath(
-                url.as_concrete_TypeRef(),
-                kCFURLPOSIXPathStyle,
-            ));
+            url = TCFType::wrap_under_get_rule(mem::transmute(value.as_CFTypeRef()));
         }
-        match File::open(path.to_string()).and_then(|mut f| f.read_to_end(&mut buffer)) {
+        let path = url.to_path().unwrap();
+        match File::open(path).and_then(|mut f| f.read_to_end(&mut buffer)) {
             Ok(_) => Some((buffer, 0)),
             Err(_) => None,
         }
