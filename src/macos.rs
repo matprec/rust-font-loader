@@ -77,9 +77,9 @@ pub mod system_fonts {
             let symbolic_traits_attr: CFString = unsafe { TCFType::wrap_under_get_rule(kCTFontSymbolicTrait) };
             let traits = CFDictionary::from_CFType_pairs(&[(symbolic_traits_attr.as_CFType(), CFNumber::from(self.symbolic_traits as i32).as_CFType())]);
             let mut attributes = Vec::new();
-            attributes.push((traits_attr.as_CFType(), traits.as_CFType()));
+            attributes.push((traits_attr, traits.as_CFType()));
             if self.family.len() != 0 {
-                attributes.push((family_attr.as_CFType(), family_name.as_CFType()));
+                attributes.push((family_attr, family_name.as_CFType()));
             }
             let attributes = CFDictionary::from_CFType_pairs(&attributes);
             font_descriptor::new_from_attributes(&attributes)
