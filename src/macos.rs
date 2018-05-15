@@ -93,17 +93,24 @@ pub mod system_fonts {
         unsafe {
             let value =
                 CTFontDescriptorCopyAttribute(config.as_concrete_TypeRef(), kCTFontURLAttribute);
-            assert!(!value.is_null());
+
+            if value.is_null() {
+                return None
+            }
 
             let value: CFType = TCFType::wrap_under_get_rule(value);
-            assert!(value.instance_of::<CFURL>());
+            if !value.instance_of::<CFURL>() {
+                return None
+            }
             url = TCFType::wrap_under_get_rule(mem::transmute(value.as_CFTypeRef()));
         }
-        let path = url.to_path().unwrap();
-        match File::open(path).and_then(|mut f| f.read_to_end(&mut buffer)) {
-            Ok(_) => Some((buffer, 0)),
-            Err(_) => None,
-        }
+        if let Some(path) = url.to_path() {
+            match File::open(path).and_then(|mut f| f.read_to_end(&mut buffer)) {
+                Ok(_) => return Some((buffer, 0)),
+                Err(_) => return None,
+            }
+        };
+        return None
     }
 
     /// Query the names of all fonts installed in the system
