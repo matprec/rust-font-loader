@@ -71,10 +71,6 @@ extern crate libc;
 
 #[cfg(target_os = "windows")]
 extern crate winapi;
-#[cfg(target_os = "windows")]
-extern crate gdi32;
-#[cfg(target_os = "windows")]
-extern crate user32;
 
 #[cfg(target_os = "windows")]
 mod win32;
