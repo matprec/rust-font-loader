@@ -18,13 +18,14 @@
 
 /// Font loading utilities for installed system fonts
 pub mod system_fonts {
-    use gdi32;
-    use winapi::{c_int, c_void};
-    use winapi::winnt::{PVOID, VOID};
-    use winapi::wingdi::FIXED_PITCH;
-    use winapi::wingdi::{ENUMLOGFONTEXW, LOGFONTW, OUT_TT_ONLY_PRECIS};
-    use winapi::wingdi::FONTENUMPROCW;
-    use winapi::minwindef::{DWORD, LPARAM};
+    use winapi::um::wingdi;
+    use winapi::um::wingdi::TEXTMETRICW;
+    use winapi::ctypes::{c_int, c_void};
+    use winapi::um::winnt::{PVOID};
+    use winapi::um::wingdi::FIXED_PITCH;
+    use winapi::um::wingdi::{ENUMLOGFONTEXW, LOGFONTW, OUT_TT_ONLY_PRECIS};
+    use winapi::um::wingdi::FONTENUMPROCW;
+    use winapi::shared::minwindef::{DWORD, LPARAM};
 
     use std::ptr;
     use std::mem;
@@ -104,22 +105,22 @@ pub mod system_fonts {
     /// Note that only truetype fonts are supported
     pub fn get(config: &FontProperty) -> Option<(Vec<u8>, c_int)> {
         unsafe {
-            let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
-            let hfont = gdi32::CreateFontIndirectW(config as *const LOGFONTW);
-            gdi32::SelectObject(hdc, hfont as *mut c_void);
-            let size = gdi32::GetFontData(hdc, 0, 0, ptr::null_mut(), 0);
+            let hdc = wingdi::CreateCompatibleDC(ptr::null_mut());
+            let hfont = wingdi::CreateFontIndirectW(config as *const LOGFONTW);
+            wingdi::SelectObject(hdc, hfont as *mut c_void);
+            let size = wingdi::GetFontData(hdc, 0, 0, ptr::null_mut(), 0);
             if size == 0xFFFFFFFF {
-                gdi32::DeleteDC(hdc);
+                wingdi::DeleteDC(hdc);
                 None
             } else if size > 0 {
                 let mut buffer: Vec<u8> = vec![0; size as usize];
                 let pointer = buffer.first_mut().unwrap() as *mut _ as PVOID;
-                let size = gdi32::GetFontData(hdc, 0, 0, pointer, size);
+                let size = wingdi::GetFontData(hdc, 0, 0, pointer, size);
                 buffer.set_len(size as usize);
-                gdi32::DeleteDC(hdc);
+                wingdi::DeleteDC(hdc);
                 Some((buffer, 0))
             } else {
-                gdi32::DeleteDC(hdc);
+                wingdi::DeleteDC(hdc);
                 None
             }
         }
@@ -130,9 +131,9 @@ pub mod system_fonts {
         unsafe {
             let mut logfont: LOGFONTW = mem::zeroed();
             let pointer = &mut logfont as *mut _;
-            let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
-            gdi32::EnumFontFamiliesExW(hdc, config, f, pointer as LPARAM, 0);
-            gdi32::DeleteDC(hdc);
+            let hdc = wingdi::CreateCompatibleDC(ptr::null_mut());
+            wingdi::EnumFontFamiliesExW(hdc, config, f, pointer as LPARAM, 0);
+            wingdi::DeleteDC(hdc);
             logfont
         }
     }
@@ -151,7 +152,7 @@ pub mod system_fonts {
         let mut fonts = Vec::new();
         let mut f: FONTENUMPROCW = Some(callback_ttf);
         unsafe {
-            let hdc = gdi32::CreateCompatibleDC(ptr::null_mut());
+            let hdc = wingdi::CreateCompatibleDC(ptr::null_mut());
 
             if (property.lfPitchAndFamily & FIXED_PITCH as u8) != 0 {
                 f = Some(callback_monospace);
@@ -159,15 +160,15 @@ pub mod system_fonts {
 
             let vec_pointer = &mut fonts as *mut Vec<String>;
 
-            gdi32::EnumFontFamiliesExW(hdc, property, f, vec_pointer as LPARAM, 0);
-            gdi32::DeleteDC(hdc);
+            wingdi::EnumFontFamiliesExW(hdc, property, f, vec_pointer as LPARAM, 0);
+            wingdi::DeleteDC(hdc);
         }
         fonts
     }
 
     #[allow(non_snake_case)]
     unsafe extern "system" fn callback_ttf(lpelfe: *const LOGFONTW,
-                                           _: *const VOID,
+                                           _: *const TEXTMETRICW,
                                            fonttype: DWORD,
                                            lparam: LPARAM)
                                            -> c_int {
@@ -183,7 +184,7 @@ pub mod system_fonts {
 
     #[allow(non_snake_case)]
     unsafe extern "system" fn callback_monospace(lpelfe: *const LOGFONTW,
-                                                 _: *const VOID,
+                                                 _: *const TEXTMETRICW,
                                                  fonttype: DWORD,
                                                  lparam: LPARAM)
                                                  -> c_int {
@@ -217,7 +218,7 @@ pub mod system_fonts {
 
     #[allow(non_snake_case)]
     unsafe extern "system" fn callback_native(lpelfe: *const LOGFONTW,
-                                              _: *const VOID,
+                                              _: *const TEXTMETRICW,
                                               fonttype: DWORD,
                                               lparam: LPARAM)
                                               -> c_int {
