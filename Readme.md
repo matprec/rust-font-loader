@@ -1,7 +1,7 @@
 # Font-Loader
-A font loading utility written in and for rust.
+A font loading utility written in and for Rust.
 
-[![Build Status](https://travis-ci.org/MSleepyPanda/rust-font-loader.svg?branch=master)](https://travis-ci.org/MSleepyPanda/rust-font-loader)
+[![Build Status](https://travis-ci.org/matprec/rust-font-loader.svg?branch=master)](https://travis-ci.org/matprec/rust-font-loader)
 
 Currently supported platforms:
 
@@ -22,7 +22,7 @@ sudo apt-get install libfontconfig libfontconfig1-dev
 ## Cargo.toml
 ```toml
 [dependencies]
-font-loader = "https://github.com/MSleepyPanda/rust-font-loader/"
+font-loader = "https://github.com/matprec/rust-font-loader"
 ```
 
 ## main.rs:

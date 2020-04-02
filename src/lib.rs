@@ -17,7 +17,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //! # Font-Loader
-//! A font loading utility written in and for rust.
+//! A font loading utility written in and for Rust.
 //!
 //! Currently supported platforms:
 //!
@@ -38,7 +38,7 @@
 //! ## Cargo.toml
 //! ```toml
 //! [dependencies]
-//! font-loader = "https://github.com/MSleepyPanda/rust-font-loader/"
+//! font-loader = "https://github.com/matprec/rust-font-loader"
 //! ```
 //!
 //! ## main.rs:
