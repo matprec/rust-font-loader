@@ -5,10 +5,10 @@ authors = ["MSleepyPanda <m.sleepypanda@gmail.com>"]
 license = "MIT"
 readme = "Readme.md"
 documentation = "https://docs.rs/font-loader/"
-homepage = "https://github.com/MSleepyPanda/rust-font-loader"
-repository = "https://github.com/MSleepyPanda/rust-font-loader"
+homepage = "https://github.com/matprec/rust-font-loader"
+repository = "https://github.com/matprec/rust-font-loader"
 keywords = ["font", "loading","loader", "wingdi", "fontconfig"]
-description = "A font loading utility written in and for rust."
+description = "A font loading utility written in and for Rust."
 
 [dependencies]
 libc = "0.2.15"
