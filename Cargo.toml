@@ -17,8 +17,8 @@ libc = "0.2.15"
 winapi = { version = "0.3", default-features = false, features = ["winuser", "wingdi"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-core-text = "15"
-core-foundation = "0.7"
+core-text = "18"
+core-foundation = "0.9"
 
 [target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
-servo-fontconfig = "0.4.0"
+servo-fontconfig = "0.5.0"
