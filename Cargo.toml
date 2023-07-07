@@ -1,6 +1,6 @@
 [package]
 name = "font-loader"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["MSleepyPanda <m.sleepypanda@gmail.com>"]
 license = "MIT"
 readme = "Readme.md"
@@ -17,7 +17,7 @@ libc = "0.2.15"
 winapi = { version = "0.3", default-features = false, features = ["winuser", "wingdi"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-core-text = "19"
+core-text = "20"
 core-foundation = "0.9"
 
 [target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
